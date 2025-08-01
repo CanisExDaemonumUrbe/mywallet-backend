@@ -1,10 +1,12 @@
 package com.cedu.service;
 
-import com.cedu.dto.RequestMoneySourceDTO;
-import com.cedu.dto.ResponseMoneySourceDTO;
-import com.cedu.dto.UpdateMoneySourceDTO;
+import com.cedu.dto.money_source.MoneySourceFilterDto;
+import com.cedu.dto.money_source.RequestMoneySourceDto;
+import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.mapper.MoneySourceMapper;
 import com.cedu.repository.MoneySourceRepository;
+import com.cedu.specification.MoneySourceSpecification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,25 +29,24 @@ public class MoneySourceService {
      * Создание нового источника
      */
     @Transactional
-    public ResponseMoneySourceDTO create(RequestMoneySourceDTO requestDto) {
+    public ResponseMoneySourceDto create(RequestMoneySourceDto requestDto) {
         var entity = moneySourceMapper.toEntity(requestDto);
-        entity.setId(UUID.randomUUID());
         var saved = moneySourceRepository.save(entity);
-        return moneySourceMapper.toDTO(saved);
+        return moneySourceMapper.toDto(saved);
     }
 
     /**
      * Обновление существующего источника
      */
     @Transactional
-    public ResponseMoneySourceDTO update(UUID id, UpdateMoneySourceDTO requestDto) {
+    public ResponseMoneySourceDto update(UUID id, UpdateMoneySourceDto requestDto) {
         var existing = moneySourceRepository.findById(id)
                 .orElseThrow( () -> new RuntimeException("MoneySource with id=" + id + " not found") );
 
         moneySourceMapper.updateEntityFromDto(requestDto, existing);
 
         var updated = moneySourceRepository.save(existing);
-        return moneySourceMapper.toDTO(updated);
+        return moneySourceMapper.toDto(updated);
     }
 
     /**
@@ -63,9 +64,10 @@ public class MoneySourceService {
      * Получение всех источников пользователя
      */
     @Transactional(readOnly = true)
-    public List<ResponseMoneySourceDTO> findAll() {
-        return moneySourceRepository.findAll().stream()
-                .map(moneySourceMapper::toDTO)
+    public List<ResponseMoneySourceDto> findAllWithFilters(MoneySourceFilterDto filterDto) {
+        return moneySourceRepository.findAll(MoneySourceSpecification.withFilters(filterDto))
+                .stream()
+                .map(moneySourceMapper::toDto)
                 .collect(Collectors.toList());
     }
 

@@ -1,9 +1,6 @@
 package com.cedu.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.UUID;
@@ -13,7 +10,8 @@ import java.util.UUID;
 public class MoneySource {
 
     @Id
-    @Column(name = "id", nullable = false)
+    @GeneratedValue
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
     @Column(name = "user_id", nullable = false)

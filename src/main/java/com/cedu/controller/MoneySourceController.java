@@ -1,8 +1,9 @@
 package com.cedu.controller;
 
-import com.cedu.dto.RequestMoneySourceDTO;
-import com.cedu.dto.ResponseMoneySourceDTO;
-import com.cedu.dto.UpdateMoneySourceDTO;
+import com.cedu.dto.money_source.MoneySourceFilterDto;
+import com.cedu.dto.money_source.RequestMoneySourceDto;
+import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.service.MoneySourceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class MoneySourceController {
      * Создание нового источника
      */
     @PostMapping("")
-    public ResponseEntity<ResponseMoneySourceDTO> create(@RequestBody RequestMoneySourceDTO requestDto) {
+    public ResponseEntity<ResponseMoneySourceDto> create(@RequestBody RequestMoneySourceDto requestDto) {
         var created = moneySourceService.create(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -34,9 +35,9 @@ public class MoneySourceController {
      * Обновление источника
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseMoneySourceDTO> update(
+    public ResponseEntity<ResponseMoneySourceDto> update(
             @PathVariable UUID id,
-            @RequestBody UpdateMoneySourceDTO updateDto) {
+            @RequestBody UpdateMoneySourceDto updateDto) {
         var updated = moneySourceService.update(id, updateDto);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
@@ -53,9 +54,24 @@ public class MoneySourceController {
     /**
      * Получение всех источников
      */
-    @GetMapping("/")
-    public ResponseEntity<List<ResponseMoneySourceDTO>> getAll() {
-        var sources = moneySourceService.findAll();
+    @GetMapping
+    public ResponseEntity<List<ResponseMoneySourceDto>> getAll(
+            @RequestParam(required = false) UUID id,
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String currency
+
+    ) {
+
+        var filterDto = MoneySourceFilterDto.builder().
+                id(id)
+                .userId(userId)
+                .name(name)
+                .type(type)
+                .currency(currency).build();
+
+        var sources = moneySourceService.findAllWithFilters(filterDto);
         return ResponseEntity.status(HttpStatus.OK).body(sources);
     }
 }

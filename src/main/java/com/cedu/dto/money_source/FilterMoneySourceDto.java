@@ -7,7 +7,7 @@ import java.util.UUID;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MoneySourceFilterDto {
+public class FilterMoneySourceDto {
     private UUID id;
     private UUID userId;
     private String name;

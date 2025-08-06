@@ -1,16 +1,16 @@
 package com.cedu.specification;
 
-import com.cedu.dto.money_source.FilterMoneySourceDto;
-import com.cedu.entity.MoneySource;
+import com.cedu.dto.tag.FilterTagDto;
+import com.cedu.entity.Tag;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoneySourceSpecification {
+public class TagSpecification {
 
-    public static Specification<MoneySource> withFilters(FilterMoneySourceDto filterDto) {
+    public static Specification<Tag> withFilters(FilterTagDto filterDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -26,16 +26,7 @@ public class MoneySourceSpecification {
                 predicates.add(criteriaBuilder.like(root.get("name"), filterDto.getName()));
             }
 
-            if (filterDto.getType() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("type"), filterDto.getType()));
-            }
-
-            if (filterDto.getCurrency() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("currency"), filterDto.getCurrency()));
-            }
-
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
-
 }

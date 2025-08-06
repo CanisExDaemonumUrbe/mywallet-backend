@@ -1,6 +1,6 @@
 package com.cedu.controller;
 
-import com.cedu.dto.money_source.MoneySourceFilterDto;
+import com.cedu.dto.money_source.FilterMoneySourceDto;
 import com.cedu.dto.money_source.RequestMoneySourceDto;
 import com.cedu.dto.money_source.ResponseMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
@@ -25,7 +25,7 @@ public class MoneySourceController {
     /**
      * Создание нового источника
      */
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<ResponseMoneySourceDto> create(@RequestBody RequestMoneySourceDto requestDto) {
         var created = moneySourceService.create(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -63,8 +63,7 @@ public class MoneySourceController {
             @RequestParam(required = false) String currency
 
     ) {
-
-        var filterDto = MoneySourceFilterDto.builder().
+        var filterDto = FilterMoneySourceDto.builder().
                 id(id)
                 .userId(userId)
                 .name(name)

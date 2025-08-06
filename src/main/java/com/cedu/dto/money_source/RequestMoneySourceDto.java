@@ -4,9 +4,10 @@ import lombok.*;
 
 import java.util.UUID;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestMoneySourceDto {
     private UUID userId;
     private String name;

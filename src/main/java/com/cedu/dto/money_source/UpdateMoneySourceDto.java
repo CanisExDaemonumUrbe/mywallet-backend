@@ -3,9 +3,10 @@ package com.cedu.dto.money_source;
 
 import lombok.*;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class UpdateMoneySourceDto {
     private String name;
     private String type;

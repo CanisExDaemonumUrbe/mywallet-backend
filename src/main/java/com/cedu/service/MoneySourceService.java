@@ -1,6 +1,6 @@
 package com.cedu.service;
 
-import com.cedu.dto.money_source.MoneySourceFilterDto;
+import com.cedu.dto.money_source.FilterMoneySourceDto;
 import com.cedu.dto.money_source.RequestMoneySourceDto;
 import com.cedu.dto.money_source.ResponseMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
@@ -61,10 +61,10 @@ public class MoneySourceService {
     }
 
     /**
-     * Получение всех источников пользователя
+     * Получение источников по фильтру
      */
     @Transactional(readOnly = true)
-    public List<ResponseMoneySourceDto> findAllWithFilters(MoneySourceFilterDto filterDto) {
+    public List<ResponseMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto) {
         return moneySourceRepository.findAll(MoneySourceSpecification.withFilters(filterDto))
                 .stream()
                 .map(moneySourceMapper::toDto)

@@ -1,6 +1,6 @@
 package com.cedu.repository;
 
-import com.cedu.dto.money_source.MoneySourceFilterDto;
+import com.cedu.dto.money_source.FilterMoneySourceDto;
 import com.cedu.entity.MoneySource;
 import com.cedu.specification.MoneySourceSpecification;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ public class MoneySourceRepositoryTest {
 
     @Test
     void testFindAll_noFilters_returnsAll() {
-        var filter = MoneySourceFilterDto.builder().build();
+        var filter = FilterMoneySourceDto.builder().build();
         var result = repository.findAll(MoneySourceSpecification.withFilters(filter));
 
         assertThat(result).hasSize(3);
@@ -43,7 +43,7 @@ public class MoneySourceRepositoryTest {
 
     @Test
     void testFindByUserId() {
-        var filter = MoneySourceFilterDto.builder().userId(USER_1).build();
+        var filter = FilterMoneySourceDto.builder().userId(USER_1).build();
 
         var result = repository.findAll(MoneySourceSpecification.withFilters(filter));
 
@@ -53,7 +53,7 @@ public class MoneySourceRepositoryTest {
 
     @Test
     void testFindByCurrency() {
-        var filter = MoneySourceFilterDto.builder().currency("RUB").build();
+        var filter = FilterMoneySourceDto.builder().currency("RUB").build();
 
         var result = repository.findAll(MoneySourceSpecification.withFilters(filter));
 
@@ -63,7 +63,7 @@ public class MoneySourceRepositoryTest {
 
     @Test
     void testFindByUserIdAndCurrency() {
-        var filter = MoneySourceFilterDto.builder().userId(USER_1).currency("USD").build();
+        var filter = FilterMoneySourceDto.builder().userId(USER_1).currency("USD").build();
 
         var result = repository.findAll(MoneySourceSpecification.withFilters(filter));
 
@@ -73,7 +73,7 @@ public class MoneySourceRepositoryTest {
 
     @Test
     void testFindByNonexistentCurrency() {
-        var filter = MoneySourceFilterDto.builder().userId(USER_2).currency("JPY").build();
+        var filter = FilterMoneySourceDto.builder().userId(USER_2).currency("JPY").build();
 
         var result = repository.findAll(MoneySourceSpecification.withFilters(filter));
 

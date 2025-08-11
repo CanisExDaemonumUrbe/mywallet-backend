@@ -7,6 +7,8 @@ import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.mapper.MoneySourceMapper;
 import com.cedu.repository.MoneySourceRepository;
 import com.cedu.specification.MoneySourceSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,11 +66,9 @@ public class MoneySourceService {
      * Получение источников по фильтру
      */
     @Transactional(readOnly = true)
-    public List<ResponseFullMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto) {
-        return moneySourceRepository.findAll(MoneySourceSpecification.withFilters(filterDto))
-                .stream()
-                .map(moneySourceMapper::toFullDto)
-                .collect(Collectors.toList());
+    public Page<ResponseFullMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto, Pageable pageable) {
+        var spec = MoneySourceSpecification.withFilters(filterDto);
+        return moneySourceRepository.findAll(spec, pageable).map(moneySourceMapper::toFullDto);
     }
 
 }

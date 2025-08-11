@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -109,15 +112,24 @@ public class MoneySourceControllerTest {
                 .description("Main")
                 .build();
 
-        when(moneySourceService.findAllWithFilters(any())).thenReturn(List.of(response));
+        var page = new PageImpl<>(List.of(response),
+                PageRequest.of(0, 20), 1);
+
+        when(moneySourceService.findAllWithFilters(any(),
+                any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/api/sources")
-                .param("userId", userId.toString())
-                .param("currency", "RUB"))
+                        .param("userId", userId.toString())
+                        .param("currency", "RUB")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value(response.getName()))
-                .andExpect(jsonPath("$[0].currency").value(response.getCurrency()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value(response.getName()))
+                .andExpect(jsonPath("$.content[0].currency").value(response.getCurrency()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(20));
     }
 
     @Test
@@ -131,11 +143,18 @@ public class MoneySourceControllerTest {
                 .description("Some cash")
                 .build();
 
-        when(moneySourceService.findAllWithFilters(any())).thenReturn(List.of(response));
+        var page = new PageImpl<>(List.of(response),
+                PageRequest.of(0, 20), 1);
 
-        mockMvc.perform(get("/api/sources"))
+        when(moneySourceService.findAllWithFilters(any(),
+                any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/sources")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].type").value(response.getType()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].type").value(response.getType()))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 }

@@ -5,9 +5,13 @@ import com.cedu.dto.money_source.RequestMoneySourceDto;
 import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.service.MoneySourceService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.UUID;
@@ -55,22 +59,24 @@ public class MoneySourceController {
      * Получение всех источников
      */
     @GetMapping
-    public ResponseEntity<List<ResponseFullMoneySourceDto>> getAll(
+    public ResponseEntity<Page<ResponseFullMoneySourceDto>> getAll(
             @RequestParam(required = false) UUID id,
             @RequestParam(required = false) UUID userId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String currency
-
+            @RequestParam(required = false) String currency,
+            @PageableDefault(size = 20, sort = "name",
+                    direction = Sort.Direction.DESC) Pageable pageable
     ) {
         var filterDto = FilterMoneySourceDto.builder().
                 id(id)
                 .userId(userId)
                 .name(name)
                 .type(type)
-                .currency(currency).build();
+                .currency(currency)
+                .build();
 
-        var sources = moneySourceService.findAllWithFilters(filterDto);
-        return ResponseEntity.status(HttpStatus.OK).body(sources);
+        var page = moneySourceService.findAllWithFilters(filterDto, pageable);
+        return ResponseEntity.ok(page);
     }
 }

@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -94,12 +97,16 @@ public class TagControllerTest {
                 .name(NAME_3)
                 .build();
 
-        when(tagService.findAllWithFilter(any())).thenReturn(List.of(tag));
+        when(tagService.findAllWithFilter(any(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(tag), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get(BASE_URL)
-                .param("name", NAME_3))
+                        .param("name", NAME_3)
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value(NAME_3));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value(NAME_3))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 }

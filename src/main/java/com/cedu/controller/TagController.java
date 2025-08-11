@@ -5,6 +5,10 @@ import com.cedu.dto.tag.RequestTagDto;
 import com.cedu.dto.tag.ResponseTagDto;
 import com.cedu.dto.tag.UpdateTagDto;
 import com.cedu.service.TagService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,17 +48,20 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ResponseTagDto>> getAll(
+    public ResponseEntity<Page<ResponseTagDto>> getAll(
             @RequestParam(required = false) UUID id,
             @RequestParam(required = false) UUID userId,
-            @RequestParam(required = false) String name
+            @RequestParam(required = false) String name,
+            @PageableDefault(size = 20, sort = "name",
+                    direction = Sort.Direction.DESC) Pageable pageable
     ) {
         var filterDto = FilterTagDto.builder()
                 .id(id)
                 .userId(userId)
-                .name(name).build();
+                .name(name)
+                .build();
 
-        var tags = tagService.findAllWithFilter(filterDto);
-        return ResponseEntity.status(HttpStatus.OK).body(tags);
+        var page = tagService.findAllWithFilter(filterDto, pageable);
+        return ResponseEntity.ok(page);
     }
 }

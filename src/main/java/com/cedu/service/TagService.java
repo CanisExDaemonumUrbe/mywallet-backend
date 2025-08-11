@@ -7,6 +7,8 @@ import com.cedu.dto.tag.UpdateTagDto;
 import com.cedu.mapper.TagMapper;
 import com.cedu.repository.TagRepository;
 import com.cedu.specification.TagSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,10 +66,12 @@ public class TagService {
      * Получение тегов по фильтру
      */
     @Transactional(readOnly = true)
-    public List<ResponseTagDto> findAllWithFilter(FilterTagDto filterDto) {
-        return tagRepository.findAll(TagSpecification.withFilters(filterDto))
-                .stream()
-                .map(tagMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<ResponseTagDto> findAllWithFilter(
+            FilterTagDto filterDto,
+            Pageable pageable
+    ) {
+        var spec = TagSpecification.withFilters(filterDto);
+        return tagRepository.findAll(spec, pageable)
+                .map(tagMapper::toDto);
     }
 }

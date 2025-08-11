@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -120,7 +120,7 @@ public class TagServiceTest {
     }
 
     @Test
-    void testFindAllWithFilter() {
+    void testFindAllWithFilter_paged() {
         var filter = FilterTagDto.builder()
                 .name(NAME_3)
                 .build();
@@ -129,20 +129,24 @@ public class TagServiceTest {
         tag.setId(UUID.randomUUID());
         tag.setName(NAME_3);
 
+        Pageable pageable = PageRequest.of(0, 20);
 
-        when(tagRepository.findAll(any(Specification.class))).thenReturn(List.of(tag));
+        when(tagRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(tag), pageable, 1));
 
-        when(tagMapper.toDto(tag)).thenReturn(
-                ResponseTagDto.builder()
-                        .id(tag.getId())
-                        .name(tag.getName())
-                        .build()
-        );
+        when(tagMapper.toDto(any(Tag.class))).thenAnswer(inv -> {
+            Tag t = inv.getArgument(0);
+            return ResponseTagDto.builder()
+                    .id(t.getId())
+                    .name(t.getName())
+                    .build();
+        });
 
-        var result = tagService.findAllWithFilter(filter);
+        Page<ResponseTagDto> result = tagService.findAllWithFilter(filter, pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo(tag.getName());
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo(NAME_3);
     }
 
 }

@@ -66,9 +66,13 @@ public class MoneySourceService {
      * Получение источников по фильтру
      */
     @Transactional(readOnly = true)
-    public Page<ResponseFullMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto, Pageable pageable) {
+    public Page<ResponseFullMoneySourceDto> findAllWithFilters(
+            FilterMoneySourceDto filterDto,
+            Pageable pageable
+    ) {
         var spec = MoneySourceSpecification.withFilters(filterDto);
-        return moneySourceRepository.findAll(spec, pageable).map(moneySourceMapper::toFullDto);
+        return moneySourceRepository.findAll(spec, pageable)
+                .map(moneySourceMapper::toFullDto);
     }
 
 }

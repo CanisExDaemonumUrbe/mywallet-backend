@@ -1,7 +1,7 @@
 package com.cedu.controller;
 
 import com.cedu.dto.money_source.RequestMoneySourceDto;
-import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.service.MoneySourceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +45,7 @@ public class MoneySourceControllerTest {
                 .description("Main")
                 .build();
 
-        var response = ResponseMoneySourceDto.builder()
+        var response = ResponseFullMoneySourceDto.builder()
                 .id(UUID.randomUUID())
                 .userId(request.getUserId())
                 .name(request.getName())
@@ -72,7 +72,7 @@ public class MoneySourceControllerTest {
                 .description("Update")
                 .build();
 
-        var response = ResponseMoneySourceDto.builder()
+        var response = ResponseFullMoneySourceDto.builder()
                 .id(id)
                 .description(update.getDescription())
                 .build();
@@ -100,7 +100,7 @@ public class MoneySourceControllerTest {
     void testGetAll_withFilters() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        var response = ResponseMoneySourceDto.builder()
+        var response = ResponseFullMoneySourceDto.builder()
                 .id(UUID.randomUUID())
                 .userId(userId)
                 .name("ТБанк")
@@ -122,7 +122,7 @@ public class MoneySourceControllerTest {
 
     @Test
     void testGetAll_noFilters() throws Exception {
-        var response = ResponseMoneySourceDto.builder()
+        var response = ResponseFullMoneySourceDto.builder()
                 .id(UUID.randomUUID())
                 .userId(UUID.randomUUID())
                 .name("Cash")

@@ -7,7 +7,7 @@ import lombok.*;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ResponseMoneySourceDto {
+public class ResponseFullMoneySourceDto {
     private UUID id;
     private UUID userId;
     private String name;

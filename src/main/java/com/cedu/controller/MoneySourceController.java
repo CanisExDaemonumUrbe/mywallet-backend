@@ -2,7 +2,7 @@ package com.cedu.controller;
 
 import com.cedu.dto.money_source.FilterMoneySourceDto;
 import com.cedu.dto.money_source.RequestMoneySourceDto;
-import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.service.MoneySourceService;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ public class MoneySourceController {
      * Создание нового источника
      */
     @PostMapping
-    public ResponseEntity<ResponseMoneySourceDto> create(@RequestBody RequestMoneySourceDto requestDto) {
+    public ResponseEntity<ResponseFullMoneySourceDto> create(@RequestBody RequestMoneySourceDto requestDto) {
         var created = moneySourceService.create(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -35,7 +35,7 @@ public class MoneySourceController {
      * Обновление источника
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseMoneySourceDto> update(
+    public ResponseEntity<ResponseFullMoneySourceDto> update(
             @PathVariable UUID id,
             @RequestBody UpdateMoneySourceDto updateDto) {
         var updated = moneySourceService.update(id, updateDto);
@@ -55,7 +55,7 @@ public class MoneySourceController {
      * Получение всех источников
      */
     @GetMapping
-    public ResponseEntity<List<ResponseMoneySourceDto>> getAll(
+    public ResponseEntity<List<ResponseFullMoneySourceDto>> getAll(
             @RequestParam(required = false) UUID id,
             @RequestParam(required = false) UUID userId,
             @RequestParam(required = false) String name,

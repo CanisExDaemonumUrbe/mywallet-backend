@@ -1,7 +1,8 @@
 package com.cedu.mapper;
 
 import com.cedu.dto.money_source.RequestMoneySourceDto;
-import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
+import com.cedu.dto.money_source.ResponseShortMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.entity.MoneySource;
 import org.mapstruct.Mapper;
@@ -12,7 +13,9 @@ public interface MoneySourceMapper {
 
     MoneySource toEntity(RequestMoneySourceDto dto);
 
-    ResponseMoneySourceDto toDto(MoneySource entity);
+    ResponseFullMoneySourceDto toFullDto(MoneySource entity);
+
+    ResponseShortMoneySourceDto toShortDto(MoneySource entity);
 
     void updateEntityFromDto(UpdateMoneySourceDto dto, @MappingTarget MoneySource entity);
 

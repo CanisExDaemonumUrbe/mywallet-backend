@@ -2,7 +2,7 @@ package com.cedu.service;
 
 import com.cedu.dto.money_source.FilterMoneySourceDto;
 import com.cedu.dto.money_source.RequestMoneySourceDto;
-import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.mapper.MoneySourceMapper;
 import com.cedu.repository.MoneySourceRepository;
@@ -29,24 +29,24 @@ public class MoneySourceService {
      * Создание нового источника
      */
     @Transactional
-    public ResponseMoneySourceDto create(RequestMoneySourceDto requestDto) {
+    public ResponseFullMoneySourceDto create(RequestMoneySourceDto requestDto) {
         var entity = moneySourceMapper.toEntity(requestDto);
         var saved = moneySourceRepository.save(entity);
-        return moneySourceMapper.toDto(saved);
+        return moneySourceMapper.toFullDto(saved);
     }
 
     /**
      * Обновление существующего источника
      */
     @Transactional
-    public ResponseMoneySourceDto update(UUID id, UpdateMoneySourceDto requestDto) {
+    public ResponseFullMoneySourceDto update(UUID id, UpdateMoneySourceDto requestDto) {
         var existing = moneySourceRepository.findById(id)
                 .orElseThrow( () -> new RuntimeException("MoneySource with id=" + id + " not found") );
 
         moneySourceMapper.updateEntityFromDto(requestDto, existing);
 
         var updated = moneySourceRepository.save(existing);
-        return moneySourceMapper.toDto(updated);
+        return moneySourceMapper.toFullDto(updated);
     }
 
     /**
@@ -64,10 +64,10 @@ public class MoneySourceService {
      * Получение источников по фильтру
      */
     @Transactional(readOnly = true)
-    public List<ResponseMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto) {
+    public List<ResponseFullMoneySourceDto> findAllWithFilters(FilterMoneySourceDto filterDto) {
         return moneySourceRepository.findAll(MoneySourceSpecification.withFilters(filterDto))
                 .stream()
-                .map(moneySourceMapper::toDto)
+                .map(moneySourceMapper::toFullDto)
                 .collect(Collectors.toList());
     }
 

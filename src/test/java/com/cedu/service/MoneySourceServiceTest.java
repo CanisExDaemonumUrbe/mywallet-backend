@@ -1,7 +1,7 @@
 package com.cedu.service;
 
 import com.cedu.dto.money_source.RequestMoneySourceDto;
-import com.cedu.dto.money_source.ResponseMoneySourceDto;
+import com.cedu.dto.money_source.ResponseFullMoneySourceDto;
 import com.cedu.dto.money_source.UpdateMoneySourceDto;
 import com.cedu.entity.MoneySource;
 import com.cedu.mapper.MoneySourceMapper;
@@ -34,7 +34,7 @@ public class MoneySourceServiceTest {
     private RequestMoneySourceDto requestDto;
     private UpdateMoneySourceDto updateDto;
     private MoneySource entity;
-    private ResponseMoneySourceDto responseDto;
+    private ResponseFullMoneySourceDto responseDto;
 
     @BeforeEach
     void setUp() {
@@ -50,7 +50,7 @@ public class MoneySourceServiceTest {
         entity.setId(UUID.randomUUID());
         entity.setName("Test Source");
 
-        responseDto = ResponseMoneySourceDto.builder()
+        responseDto = ResponseFullMoneySourceDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
                 .build();
@@ -60,14 +60,14 @@ public class MoneySourceServiceTest {
     void testCreate() {
         when(moneySourceMapper.toEntity(requestDto)).thenReturn(entity);
         when(moneySourceRepository.save(entity)).thenReturn(entity);
-        when(moneySourceMapper.toDto(entity)).thenReturn(responseDto);
+        when(moneySourceMapper.toFullDto(entity)).thenReturn(responseDto);
 
         var result = moneySourceService.create(requestDto);
 
         assertThat(result.getId()).isEqualTo(responseDto.getId());
         verify(moneySourceRepository, times(1)).save(any());
         verify(moneySourceMapper).toEntity(requestDto);
-        verify(moneySourceMapper).toDto(entity);
+        verify(moneySourceMapper).toFullDto(entity);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class MoneySourceServiceTest {
             return null ;
         }).when(moneySourceMapper).updateEntityFromDto(updateDto, existing);
         when(moneySourceRepository.save(existing)).thenReturn(existing);
-        when(moneySourceMapper.toDto(existing)).thenReturn(responseDto);
+        when(moneySourceMapper.toFullDto(existing)).thenReturn(responseDto);
 
         var result = moneySourceService.update(id, updateDto);
 
@@ -93,7 +93,7 @@ public class MoneySourceServiceTest {
         verify(moneySourceRepository).findById(id);
         verify(moneySourceRepository).save(existing);
         verify(moneySourceMapper).updateEntityFromDto(updateDto, existing);
-        verify(moneySourceMapper).toDto(existing);
+        verify(moneySourceMapper).toFullDto(existing);
     }
 
     @Test

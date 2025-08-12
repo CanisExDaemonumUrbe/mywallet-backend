@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(TransactionController.class)
-public class TransactionController {
+public class TransactionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -155,7 +158,10 @@ public class TransactionController {
                 .tags(Set.of(ResponseTagDto.builder().id(tagId).name("еда").build()))
                 .build();
 
-        when(transactionService.findAll(any())).thenReturn(List.of(tx));
+        var page = new PageImpl<>(List.of(tx), PageRequest.of(0, 20), 1);
+
+        when(transactionService.findAllWithFilter(any(), any(Pageable.class)))
+                .thenReturn(page);
 
         mockMvc.perform(get("/api/transactions")
                         .param("userId", userId.toString())
@@ -163,23 +169,38 @@ public class TransactionController {
                         .param("sourceId", sourceId.toString())
                         .param("tagsId", tagId.toString())
                         .param("from", "2024-01-01T00:00:00Z")
-                        .param("to", "2024-01-31T23:59:59Z"))
+                        .param("to", "2024-01-31T23:59:59Z")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].userId").value(userId.toString()))
-                .andExpect(jsonPath("$[0].type").value("expense"))
-                .andExpect(jsonPath("$[0].source.id").value(sourceId.toString()))
-                .andExpect(jsonPath("$[0].tags[0].id").value(tagId.toString()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].userId").value(userId.toString()))
+                .andExpect(jsonPath("$.content[0].type").value("expense"))
+                .andExpect(jsonPath("$.content[0].source.id").value(sourceId.toString()))
+                .andExpect(jsonPath("$.content[0].tags[0].id").value(tagId.toString()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(20));
 
-        verify(transactionService).findAll(any());
+        verify(transactionService).findAllWithFilter(any(), any(Pageable.class));
     }
 
     @Test
     void getAll_noFilters_ok() throws Exception {
-        when(transactionService.findAll(any())).thenReturn(List.of());
-        mockMvc.perform(get("/api/transactions"))
+        var emptyPage = new PageImpl<ResponseTransactionDto>(List.of(), PageRequest.of(0, 20), 0);
+
+        when(transactionService.findAllWithFilter(any(), any(Pageable.class)))
+                .thenReturn(emptyPage);
+
+        mockMvc.perform(get("/api/transactions")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
-        verify(transactionService).findAll(any());
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.empty").value(true))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
+
+        verify(transactionService).findAllWithFilter(any(), any(Pageable.class));
     }
 }

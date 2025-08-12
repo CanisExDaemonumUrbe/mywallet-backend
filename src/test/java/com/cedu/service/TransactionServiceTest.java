@@ -14,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -228,9 +231,17 @@ public class TransactionServiceTest {
     }
 
     @Test
-    void findAll_withFilter_mapsToDto() {
-        var tx = new Transaction(); tx.setId(txId);
-        when(transactionRepository.findAll(any(Specification.class))).thenReturn(List.of(tx));
+    void findAll_withFilter_mapsToDto_paged() {
+        var pageable = PageRequest.of(0, 20);
+
+        var tx = new Transaction();
+        tx.setId(txId);
+
+        // Репозиторий: Specification + Pageable -> Page<Transaction>
+        when(transactionRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(tx), pageable, 1));
+
+        // Маппинг в DTO
         when(transactionMapper.toDto(tx)).thenReturn(responseDto);
 
         var filter = FilterTransactionDto.builder()
@@ -238,12 +249,14 @@ public class TransactionServiceTest {
                 .type("expense")
                 .build();
 
-        var result = transactionService.findAll(filter);
+        // Сервис: принимает Pageable и возвращает Page<ResponseTransactionDto>
+        Page<ResponseTransactionDto> result = transactionService.findAllWithFilter(filter, pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getId()).isEqualTo(txId);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getId()).isEqualTo(txId);
 
-        verify(transactionRepository).findAll(any(Specification.class));
+        verify(transactionRepository).findAll(any(Specification.class), eq(pageable));
         verify(transactionMapper).toDto(tx);
     }
 

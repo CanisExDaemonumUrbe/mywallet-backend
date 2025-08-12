@@ -5,6 +5,10 @@ import com.cedu.dto.transaction.RequestTransactionDto;
 import com.cedu.dto.transaction.ResponseTransactionDto;
 import com.cedu.dto.transaction.UpdateTransactionDto;
 import com.cedu.service.TransactionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,14 +52,16 @@ public class TransactionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ResponseTransactionDto>> getAll(
+    public ResponseEntity<Page<ResponseTransactionDto>> getAll(
             @RequestParam(required = false) UUID id,
             @RequestParam(required = false) UUID userId,
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) UUID sourceId,
-            @RequestParam(required = false) Set<UUID> tagsId
+            @RequestParam(required = false) Set<UUID> tagsId,
+            @PageableDefault(size = 20, sort = "date",
+                    direction = Sort.Direction.DESC) Pageable pageable
     ) {
         var filter = FilterTransactionDto.builder()
                 .id(id)
@@ -67,7 +73,7 @@ public class TransactionController {
                 .tagsId(tagsId)
                 .build();
 
-        var transactions = transactionService.findAll(filter);
-        return ResponseEntity.status(HttpStatus.OK).body(transactions);
+        var page = transactionService.findAllWithFilter(filter, pageable);
+        return ResponseEntity.ok(page);
     }
 }

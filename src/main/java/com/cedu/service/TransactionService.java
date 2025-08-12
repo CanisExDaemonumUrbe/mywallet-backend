@@ -10,11 +10,12 @@ import com.cedu.repository.MoneySourceRepository;
 import com.cedu.repository.TagRepository;
 import com.cedu.repository.TransactionRepository;
 import com.cedu.specification.TransactionSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -108,10 +109,12 @@ public class TransactionService {
      * Получение тегов по фильтру
      */
     @Transactional(readOnly = true)
-    public List<ResponseTransactionDto> findAll(FilterTransactionDto filter) {
-        return transactionRepository.findAll(TransactionSpecification.withFilters(filter))
-                .stream()
-                .map(transactionMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<ResponseTransactionDto> findAllWithFilter(
+            FilterTransactionDto filterDto,
+            Pageable pageable
+    ) {
+        var spec = TransactionSpecification.withFilters(filterDto);
+        return transactionRepository.findAll(spec, pageable)
+                .map(transactionMapper::toDto);
     }
 }

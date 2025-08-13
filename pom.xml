@@ -14,7 +14,7 @@
 
     <groupId>com.cedu</groupId>
     <artifactId>mywallet-backend</artifactId>
-    <version>1.0.0</version>
+    <version>0.2.4</version>
     <packaging>jar</packaging>
 
     <name>mywallet-backend</name>

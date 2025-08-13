@@ -1,5 +1,6 @@
 package com.cedu.controller;
 
+import com.cedu.api.WrapResponseAdvice;
 import com.cedu.dto.tag.RequestTagDto;
 import com.cedu.dto.tag.ResponseTagDto;
 import com.cedu.dto.tag.UpdateTagDto;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TagController.class)
+@Import(WrapResponseAdvice.class)
 public class TagControllerTest {
 
     @Autowired
@@ -59,10 +62,10 @@ public class TagControllerTest {
         when(tagService.create(any())).thenReturn(response);
 
         mockMvc.perform(post(BASE_URL)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value(NAME_1));
+                .andExpect(jsonPath("$.data.name").value(NAME_1));
     }
 
     @Test
@@ -74,10 +77,10 @@ public class TagControllerTest {
         when(tagService.update(eq(id), any())).thenReturn(response);
 
         mockMvc.perform(put(BASE_URL + "/" + id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(update)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(NAME_2));
+                .andExpect(jsonPath("$.data.name").value(NAME_2));
     }
 
     @Test
@@ -105,8 +108,10 @@ public class TagControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].name").value(NAME_3))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].name").value(NAME_3))
+                .andExpect(jsonPath("$.pagination.totalElements").value(1))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(20));
     }
 }

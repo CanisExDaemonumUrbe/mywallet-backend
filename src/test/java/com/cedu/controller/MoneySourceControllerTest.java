@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MoneySourceController.class)
+@Import(com.cedu.api.WrapResponseAdvice.class)
 public class MoneySourceControllerTest {
 
     @Autowired
@@ -61,10 +63,11 @@ public class MoneySourceControllerTest {
         when(moneySourceService.create(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/sources")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value(request.getName()));
+                .andExpect(jsonPath("$.data.name").value(request.getName()));
+
     }
 
     @Test
@@ -82,18 +85,19 @@ public class MoneySourceControllerTest {
 
         when(moneySourceService.update(eq(id), any())).thenReturn(response);
 
-        mockMvc.perform(put("/api/sources/"+id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(update)))
+        mockMvc.perform(put("/api/sources/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.description").value(update.getDescription()));
+                .andExpect(jsonPath("$.data.description").value(update.getDescription()));
+
     }
 
     @Test
     void testDelete() throws Exception {
         UUID id = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/sources/"+id))
+        mockMvc.perform(delete("/api/sources/" + id))
                 .andExpect(status().isNoContent());
 
         verify(moneySourceService).delete(id);
@@ -124,12 +128,13 @@ public class MoneySourceControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].name").value(response.getName()))
-                .andExpect(jsonPath("$.content[0].currency").value(response.getCurrency()))
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.pageable.pageSize").value(20));
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].name").value(response.getName()))
+                .andExpect(jsonPath("$.data[0].currency").value(response.getCurrency()))
+                .andExpect(jsonPath("$.pagination.totalElements").value(1))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(20));
+
     }
 
     @Test
@@ -153,8 +158,9 @@ public class MoneySourceControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].type").value(response.getType()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].type").value(response.getType()))
+                .andExpect(jsonPath("$.pagination.totalElements").value(1));
+
     }
 }

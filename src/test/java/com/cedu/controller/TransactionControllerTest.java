@@ -1,5 +1,6 @@
 package com.cedu.controller;
 
+import com.cedu.api.WrapResponseAdvice;
 import com.cedu.dto.money_source.ResponseShortMoneySourceDto;
 import com.cedu.dto.tag.ResponseTagDto;
 import com.cedu.dto.transaction.RequestTransactionDto;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(TransactionController.class)
+@Import(WrapResponseAdvice.class)
 public class TransactionControllerTest {
 
     @Autowired
@@ -80,12 +83,12 @@ public class TransactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.amount").value(123.45))
-                .andExpect(jsonPath("$.type").value("expense"))
-                .andExpect(jsonPath("$.source.id").value(sourceId.toString()))
-                .andExpect(jsonPath("$.description").value("Lunch"));
+                .andExpect(jsonPath("$.data.id").isNotEmpty())
+                .andExpect(jsonPath("$.data.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.data.amount").value(123.45))
+                .andExpect(jsonPath("$.data.type").value("expense"))
+                .andExpect(jsonPath("$.data.source.id").value(sourceId.toString()))
+                .andExpect(jsonPath("$.data.description").value("Lunch"));
 
         verify(transactionService).create(any());
     }
@@ -122,11 +125,11 @@ public class TransactionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.type").value("income"))
-                .andExpect(jsonPath("$.amount").value(200.00))
-                .andExpect(jsonPath("$.source.id").value(newSourceId.toString()))
-                .andExpect(jsonPath("$.description").value("Salary"));
+                .andExpect(jsonPath("$.data.id").value(id.toString()))
+                .andExpect(jsonPath("$.data.type").value("income"))
+                .andExpect(jsonPath("$.data.amount").value(200.00))
+                .andExpect(jsonPath("$.data.source.id").value(newSourceId.toString()))
+                .andExpect(jsonPath("$.data.description").value("Salary"));
 
         verify(transactionService).update(eq(id), any());
     }
@@ -173,14 +176,14 @@ public class TransactionControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].userId").value(userId.toString()))
-                .andExpect(jsonPath("$.content[0].type").value("expense"))
-                .andExpect(jsonPath("$.content[0].source.id").value(sourceId.toString()))
-                .andExpect(jsonPath("$.content[0].tags[0].id").value(tagId.toString()))
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.pageable.pageSize").value(20));
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].userId").value(userId.toString()))
+                .andExpect(jsonPath("$.data[0].type").value("expense"))
+                .andExpect(jsonPath("$.data[0].source.id").value(sourceId.toString()))
+                .andExpect(jsonPath("$.data[0].tags[0].id").value(tagId.toString()))
+                .andExpect(jsonPath("$.pagination.totalElements").value(1))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(20));
 
         verify(transactionService).findAllWithFilter(any(), any(Pageable.class));
     }
@@ -196,10 +199,11 @@ public class TransactionControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(0))
-                .andExpect(jsonPath("$.empty").value(true))
-                .andExpect(jsonPath("$.totalElements").value(0))
-                .andExpect(jsonPath("$.totalPages").value(0));
+                .andExpect(jsonPath("$.data.length()").value(0))
+                .andExpect(jsonPath("$.pagination.totalElements").value(0))
+                .andExpect(jsonPath("$.pagination.totalPages").value(0))
+                .andExpect(jsonPath("$.pagination.page").value(0))
+                .andExpect(jsonPath("$.pagination.size").value(20));
 
         verify(transactionService).findAllWithFilter(any(), any(Pageable.class));
     }

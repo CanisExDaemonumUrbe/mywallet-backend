@@ -3,18 +3,35 @@
 
 -- 1) Accounts
 create table account (
-                         id uuid primary key,
-                         user_id uuid not null,
-                         parent_id uuid references account(id),
-                         name text not null,
-                         kind text not null check (kind in ('asset','liability','equity','income','expense')),
-                         currency text,
+                         id        uuid primary key,
+                         user_id   uuid not null,
+                         parent_id uuid,
+                         name      text not null,
+                         kind      text not null check (kind in ('ASSET','LIABILITY','EQUITY','INCOME','EXPENSE')),
                          is_active boolean not null default true
 );
 
-create index idx_account_user   on account(user_id);
-create index idx_account_parent on account(parent_id);
-create unique index uq_account_user_parent_name on account(user_id, parent_id, name);
+-- инварианты и производительность
+-- 1) уникальность пары (id, user_id) — нужна для составного FK
+alter table account
+    add constraint uq_account_id_user unique (id, user_id);
+
+-- 2) уникальность имени в пределах (user_id, parent_id)
+create unique index uq_account_user_parent_name
+    on account(user_id, parent_id, name);
+
+-- 3) составной внешний ключ: (parent_id, user_id) -> (id, user_id)
+-- гарантирует, что родитель и ребёнок принадлежат одному user_id
+alter table account
+    add constraint fk_account_parent_same_user
+        foreign key (parent_id, user_id)
+            references account(id, user_id)
+            on delete restrict;
+
+-- полезные индексы
+create index idx_account_user         on account(user_id);
+create index idx_account_parent_user  on account(parent_id, user_id);
+
 
 -- 2) Journal entries
 create table journal_entry (

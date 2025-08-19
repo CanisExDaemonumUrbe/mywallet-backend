@@ -49,5 +49,4 @@ public class Account {
     }
 }
 
-
 enum AccountKind { ASSET, LIABILITY, EQUITY, INCOME, EXPENSE }

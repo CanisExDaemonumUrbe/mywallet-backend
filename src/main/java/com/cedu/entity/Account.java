@@ -15,14 +15,19 @@ public class Account {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    // записываемое поле user_id
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    // записываемое поле parent_id
+    @Column(name = "parent_id")
+    private UUID parentId;
+
+    // read-only ассоциация на родителя по (parent_id, user_id)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "parent_id", referencedColumnName = "id"),
-            @JoinColumn(name = "user_id",   referencedColumnName = "user_id",
-                    insertable = false, updatable = false)
+            @JoinColumn(name = "parent_id", referencedColumnName = "id", insertable = false, updatable = false),
+            @JoinColumn(name = "user_id",   referencedColumnName = "user_id", insertable = false, updatable = false)
     })
     private Account parent;
 
@@ -35,6 +40,14 @@ public class Account {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    // Удобный сеттер: держит в синхроне parent и parentId
+    public void setParent(Account parent) {
+        this.parent = parent;
+        this.parentId = (parent != null ? parent.getId() : null);
+        // userId оставляем как есть; БД проверит, что он совпадает с parent.userId
+    }
 }
+
 
 enum AccountKind { ASSET, LIABILITY, EQUITY, INCOME, EXPENSE }

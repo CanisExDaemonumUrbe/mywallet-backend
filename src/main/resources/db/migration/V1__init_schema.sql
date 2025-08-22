@@ -12,15 +12,15 @@ create table account (
 );
 
 -- инварианты и производительность
--- 1) уникальность пары (id, user_id) — нужна для составного FK
+-- уникальность пары (id, user_id) — нужна для составного FK
 alter table account
     add constraint uq_account_id_user unique (id, user_id);
 
--- 2) уникальность имени в пределах (user_id, parent_id)
+-- уникальность имени в пределах (user_id, parent_id)
 create unique index uq_account_user_parent_name
     on account(user_id, parent_id, name);
 
--- 3) составной внешний ключ: (parent_id, user_id) -> (id, user_id)
+-- составной внешний ключ: (parent_id, user_id) -> (id, user_id)
 -- гарантирует, что родитель и ребёнок принадлежат одному user_id
 alter table account
     add constraint fk_account_parent_same_user
@@ -35,19 +35,39 @@ create index idx_account_parent_user  on account(parent_id, user_id);
 
 -- 2) Journal entries
 create table journal_entry (
-                               id uuid primary key,
-                               user_id uuid not null,
-                               occurred_at timestamp not null,
-                               booked_at   timestamp not null default now(),
+                               id          uuid primary key,
+                               user_id     uuid not null,
+                               occurred_at timestamptz not null,
+                               booked_at   timestamptz not null default now(),
                                description  text,
-                               external_ref text,
-                               reversal_of uuid references journal_entry(id),
-                               status text not null default 'posted' check (status in ('posted','void'))
+                               reversal_of  uuid,
+                               status       text not null default 'POSTED' check (status in ('POSTED','VOID'))
 );
 
-create index idx_je_user      on journal_entry(user_id);
-create index idx_je_occurred  on journal_entry(occurred_at);
-create index idx_je_reversal  on journal_entry(reversal_of);
+-- Для составного FK (reversal_of, user_id) -> (id, user_id)
+alter table journal_entry
+    add constraint uq_je_id_user unique (id, user_id);
+
+-- Разрешаем реверс ТОЛЬКО внутри того же пользователя
+alter table journal_entry
+    add constraint fk_je_reversal_same_user
+        foreign key (reversal_of, user_id)
+            references journal_entry (id, user_id)
+            on delete restrict;
+
+-- Один реверс на исходную проводку
+create unique index uq_je_reversal_once
+    on journal_entry(reversal_of)
+    where reversal_of is not null;
+
+-- (Опционально) запрет «будущего бронирования», если нужно
+    alter table journal_entry
+    add constraint ck_je_occurred_le_booked check (occurred_at <= booked_at);
+
+-- Индексы
+create index idx_je_user          on journal_entry(user_id);
+create index idx_je_occurred      on journal_entry(occurred_at);
+create index idx_je_reversal_user on journal_entry(reversal_of, user_id);
 
 -- 3) Postings
 create table posting (
@@ -60,42 +80,3 @@ create table posting (
 
 create index idx_posting_je  on posting(journal_entry_id);
 create index idx_posting_acc on posting(account_id);
-
------------------------------------------------------------------------------
-
-
--- Источник средств
-create table money_source (
-                              id uuid primary key,
-                              user_id uuid not null,
-                              name text not null,
-                              type text not null,
-                              currency text not null default 'RUB',
-                              description text
-);
-
--- Транзакции
-create table transaction (
-                             id uuid primary key,
-                             user_id uuid not null,
-                             date timestamp not null,
-                             amount numeric(12,2) not null,
-                             type text not null check (type in ('income', 'expense')),
-                             source_id uuid not null references money_source(id),
-                             description text
-);
-
--- Теги пользователя
-create table tag (
-                     id uuid primary key,
-                     user_id uuid not null,
-                     name text not null,
-                     unique (user_id, name)
-);
-
--- Связь "многие ко многим" между транзакциями и тегами
-create table transaction_tag (
-                                 transaction_id uuid not null references transaction(id) on delete cascade,
-                                 tag_id uuid not null references tag(id) on delete cascade,
-                                 primary key (transaction_id, tag_id)
-);

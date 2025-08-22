@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    active: dev
+
   jackson:
     property-naming-strategy: SNAKE_CASE
 
@@ -22,3 +25,25 @@ spring:
   sql:
     init:
       mode: never
+
+---
+# DEV-профиль: добавляем путь к dev-миграциям и плейсхолдер для сидирования
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration/dev
+    placeholders:
+      seed_user_id: 11111111-1111-1111-1111-111111111111
+
+---
+# PROD-профиль: только базовые миграции, можно скрыть SQL-лог
+spring:
+  config:
+    activate:
+      on-profile: prod
+  flyway:
+    locations: classpath:db/migration
+  jpa:
+    show-sql: false

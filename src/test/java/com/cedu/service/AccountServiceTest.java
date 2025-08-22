@@ -82,7 +82,7 @@ public class AccountServiceTest {
                 .userId(userId)
                 .name(entity.getName())
                 .kind(entity.getKind())
-                .active(entity.getIsActive())
+                .isActive(entity.getIsActive())
                 .parentId(null)
                 .build();
     }
@@ -214,7 +214,7 @@ public class AccountServiceTest {
                 .userId(existing.getUserId())
                 .name("Cash (updated)")
                 .kind(existing.getKind())
-                .active(false)
+                .isActive(false)
                 .parentId(existing.getParentId())
                 .build();
 
@@ -256,8 +256,8 @@ public class AccountServiceTest {
 
         when(accountRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
 
-        var dto1 = ResponseAccountDto.builder().id(a1.getId()).userId(userId).name("A").kind(AccountKind.ASSET).active(true).build();
-        var dto2 = ResponseAccountDto.builder().id(a2.getId()).userId(userId).name("B").kind(AccountKind.ASSET).active(true).build();
+        var dto1 = ResponseAccountDto.builder().id(a1.getId()).userId(userId).name("A").kind(AccountKind.ASSET).isActive(true).build();
+        var dto2 = ResponseAccountDto.builder().id(a2.getId()).userId(userId).name("B").kind(AccountKind.ASSET).isActive(true).build();
 
         when(accountMapper.toDto(a1)).thenReturn(dto1);
         when(accountMapper.toDto(a2)).thenReturn(dto2);

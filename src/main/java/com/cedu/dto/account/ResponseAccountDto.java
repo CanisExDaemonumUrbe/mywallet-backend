@@ -17,5 +17,5 @@ public class ResponseAccountDto {
     private UUID parentId;
     private String name;
     private AccountKind kind;
-    private Boolean active;
+    private Boolean isActive;
 }

@@ -7,13 +7,20 @@ import jakarta.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
 
+import static com.cedu.specification.Specs.*;
+
 public class AccountSpecification {
 
-    public static Specification<Account> withFilters(FilterAccountDto filter) {
-        return (root, query, cb) -> {
-            var predicates = new ArrayList<Predicate>();
+    public static Specification<Account> withFilters(FilterAccountDto f) {
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        return where(
+                eq("id", f.getId()),
+                eq("userId", f.getUserId()),
+                eq("parentId", f.getParentId()),
+                like("name", f.getName()),
+                eq("kind", f.getKind()),
+                eq("isActive", f.getIsActive())
+        );
+
     }
 }

@@ -14,7 +14,7 @@
 
     <groupId>com.cedu</groupId>
     <artifactId>mywallet-backend</artifactId>
-    <version>1.0.5-pet</version>
+    <version>1.0.6-pet</version>
     <packaging>jar</packaging>
 
     <name>mywallet-backend</name>
@@ -35,6 +35,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
+        <!-- Валидация -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
 
         <!-- Database -->
         <dependency>

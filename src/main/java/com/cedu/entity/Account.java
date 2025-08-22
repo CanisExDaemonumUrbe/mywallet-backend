@@ -1,5 +1,6 @@
 package com.cedu.entity;
 
+import com.cedu.enums.AccountKind;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,5 +49,3 @@ public class Account {
         // userId оставляем как есть; БД проверит, что он совпадает с parent.userId
     }
 }
-
-enum AccountKind { ASSET, LIABILITY, EQUITY, INCOME, EXPENSE }

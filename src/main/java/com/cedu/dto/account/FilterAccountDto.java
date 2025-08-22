@@ -1,5 +1,6 @@
 package com.cedu.dto.account;
 
+import com.cedu.enums.AccountKind;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AccessLevel;
@@ -18,6 +19,6 @@ public class FilterAccountDto {
     private UUID userId;
     private UUID parentId;
     private String name;
-    private String kind;
+    private AccountKind kind;
     private Boolean isActive;
 }

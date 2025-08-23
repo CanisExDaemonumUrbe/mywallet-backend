@@ -3,9 +3,6 @@ package com.cedu.specification;
 import com.cedu.dto.account.FilterAccountDto;
 import com.cedu.entity.Account;
 import org.springframework.data.jpa.domain.Specification;
-import jakarta.persistence.criteria.Predicate;
-
-import java.util.ArrayList;
 
 import static com.cedu.specification.Specs.*;
 

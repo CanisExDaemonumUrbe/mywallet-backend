@@ -37,8 +37,8 @@ create index idx_account_parent_user  on account(parent_id, user_id);
 create table journal_entry (
                                id          uuid primary key,
                                user_id     uuid not null,
-                               occurred_at timestamptz not null,
-                               booked_at   timestamptz not null default now(),
+                               occurred_at  TIMESTAMP WITH TIME ZONE not null,
+                               booked_at    TIMESTAMP WITH TIME ZONE not null default CURRENT_TIMESTAMP,
                                description  text,
                                reversal_of  uuid,
                                status       text not null default 'POSTED' check (status in ('POSTED','VOID'))
@@ -57,8 +57,7 @@ alter table journal_entry
 
 -- Один реверс на исходную проводку
 create unique index uq_je_reversal_once
-    on journal_entry(reversal_of)
-    where reversal_of is not null;
+    on journal_entry(reversal_of);
 
 -- (Опционально) запрет «будущего бронирования», если нужно
     alter table journal_entry

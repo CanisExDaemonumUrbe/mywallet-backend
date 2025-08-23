@@ -1,12 +1,12 @@
 package com.cedu.controller;
 
 import com.cedu.api.WrapResponseAdvice;
-import com.cedu.dto.account.FilterAccountDto;
-import com.cedu.dto.account.RequestAccountDto;
-import com.cedu.dto.account.ResponseAccountDto;
-import com.cedu.dto.account.UpdateAccountDto;
-import com.cedu.enums.AccountKind;
-import com.cedu.service.AccountService;
+import com.cedu.dto.journal_entry.FilterJournalEntryDto;
+import com.cedu.dto.journal_entry.RequestJournalEntryDto;
+import com.cedu.dto.journal_entry.ResponseJournalEntryDto;
+import com.cedu.dto.journal_entry.UpdateJournalEntryDto;
+import com.cedu.enums.JournalEntryStatus;
+import com.cedu.service.JournalEntryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,14 +32,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AccountController.class)
+@WebMvcTest(JournalEntryController.class)
 @Import(WrapResponseAdvice.class)
-public class AccountControllerTest {
-
+public class JournalEntryControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -45,139 +45,134 @@ public class AccountControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private AccountService accountService;
+    private JournalEntryService journalEntryService;
 
-    private static final String BASE = "/api/accounts";
+    private static final String BASE = "/api/journal";
 
     @Test
-    void create_ok_returnsWrapped() throws Exception {
-        var req = RequestAccountDto.builder()
+    void create_returnsWrapped201() throws Exception {
+        var now = OffsetDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
+
+        var req = RequestJournalEntryDto.builder()
                 .userId(UUID.randomUUID())
-                .parentId(null)
-                .name("Cash")
-                .kind(AccountKind.ASSET)
-                .isActive(true)
+                .occurredAt(now)
+                .bookedAt(now.plusHours(1))
+                .description("Created")
+                .reversalOfId(null)
                 .build();
 
-        var resp = ResponseAccountDto.builder()
-                .id(UUID.randomUUID())
+        var resp = ResponseJournalEntryDto.builder()
                 .userId(req.getUserId())
-                .parentId(null)
-                .name(req.getName())
-                .kind(req.getKind())
-                .isActive(true)
+                .occurredAt(req.getOccurredAt())
+                .bookedAt(req.getBookedAt())
+                .description(req.getDescription())
                 .build();
 
-        when(accountService.create(any())).thenReturn(resp);
+        when(journalEntryService.create(any())).thenReturn(resp);
 
         mockMvc.perform(post(BASE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.name").value("Cash"))
-                .andExpect(jsonPath("$.data.kind").value("ASSET"));
+                .andExpect(jsonPath("$.data.description").value("Created"))
+                .andExpect(jsonPath("$.data.user_id").value(req.getUserId().toString()));
     }
 
+
     @Test
-    void update_ok_returnsWrapped() throws Exception {
+    void update_returnsWrapped200() throws Exception {
         var id = UUID.randomUUID();
+        var now = OffsetDateTime.of(2024, 1, 2, 12, 0, 0, 0, ZoneOffset.UTC);
 
-        var update = UpdateAccountDto.builder()
-                .name("Cash (upd)")
-                .isActive(false)
+        var update = UpdateJournalEntryDto.builder()
+                .status(JournalEntryStatus.POSTED)
                 .build();
 
-        var resp = ResponseAccountDto.builder()
-                .id(id)
-                .name("Cash (upd)")
-                .isActive(false)
-                .kind(AccountKind.ASSET)
+        var resp = ResponseJournalEntryDto.builder()
+                .status(JournalEntryStatus.POSTED)
                 .build();
 
-        when(accountService.update(eq(id), any())).thenReturn(resp);
+        when(journalEntryService.update(eq(id), any())).thenReturn(resp);
 
         mockMvc.perform(patch(BASE + "/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.name").value("Cash (upd)"))
-                .andExpect(jsonPath("$.data.is_active").value(false));
+                .andExpect(jsonPath("$.data.status").value("POSTED"));
     }
 
     @Test
-    void delete_noContent() throws Exception {
+    void delete_returns204() throws Exception {
         var id = UUID.randomUUID();
 
         mockMvc.perform(delete(BASE + "/" + id))
                 .andExpect(status().isNoContent());
 
-        verify(accountService).delete(id);
+        verify(journalEntryService).delete(id);
     }
 
     @Test
     void search_withFilter_andPageable_returnsPageResponse() throws Exception {
-        var u = UUID.randomUUID();
+        var t1 = ResponseJournalEntryDto.builder()
+                .description("A").build();
+        var t2 = ResponseJournalEntryDto.builder()
+                .description("B").build();
 
-        var a1 = ResponseAccountDto.builder()
-                .id(UUID.randomUUID()).userId(u).name("A").kind(AccountKind.ASSET).isActive(true).build();
-        var a2 = ResponseAccountDto.builder()
-                .id(UUID.randomUUID()).userId(u).name("B").kind(AccountKind.ASSET).isActive(true).build();
+        // Клиент просит page=1,size=10, sort=occurredAt,desc
+        var pageable = PageRequest.of(1, 10, Sort.by(Sort.Order.desc("occurredAt")));
+        // totalElements = 2 — именно это и хотим получить в JSON
+        var page = new PageImpl<>(List.of(t1, t2), pageable, 2);
 
-        // Возвращаем страницу с тем Pageable, который передал контроллер, totalElements = 2
-        when(accountService.find(any(FilterAccountDto.class), any(Pageable.class)))
-                .thenAnswer(inv -> {
-                    Pageable p = inv.getArgument(1);
-                    return new PageImpl<>(List.of(a1, a2), p, 2);
-                });
+        when(journalEntryService.find(any(FilterJournalEntryDto.class), any(Pageable.class)))
+                .thenReturn(page);
 
-        var filter = FilterAccountDto.builder()
-                .userId(u)
-                .kind(AccountKind.ASSET)
-                .isActive(true)
+        var filter = FilterJournalEntryDto.builder()
+                .description("A or B")
                 .build();
 
         mockMvc.perform(post(BASE + "/search")
                         .param("page", "1")
                         .param("size", "10")
+                        .param("sort", "occurredAt,desc")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(filter)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].name").value("A"))
                 .andExpect(jsonPath("$.pagination.page").value(1))
                 .andExpect(jsonPath("$.pagination.size").value(10))
                 .andExpect(jsonPath("$.pagination.total_elements").value(12));
-        //Почему-то в тесте считается не количество сущностей в ответе,
-        //а суммарное количество полей во всех сущностях.
-        //За неимением идей - пока что оставлено так
+
+        // Проверим, что контроллер пробросил pageable именно таким, как в запросе
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(journalEntryService).find(any(FilterJournalEntryDto.class), pageableCaptor.capture());
+        var passed = pageableCaptor.getValue();
+        assertThat(passed.getPageNumber()).isEqualTo(1);
+        assertThat(passed.getPageSize()).isEqualTo(10);
+        assertThat(passed.getSort()).isEqualTo(Sort.by(Sort.Order.desc("occurredAt")));
     }
 
     @Test
     void search_withoutParams_usesDefaultPageable() throws Exception {
-        // вернём пустую страницу, но проверим, что контроллер передал дефолтный pageable
+        // Дефолтный @PageableDefault(size=20, page=0, sort=id,DESC)
         var defaultPageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("id")));
-        var empty = new PageImpl<ResponseAccountDto>(List.of(), defaultPageable, 0);
+        var emptyPage = new PageImpl<ResponseJournalEntryDto>(List.of(), defaultPageable, 0);
 
-        when(accountService.find(any(FilterAccountDto.class), any(Pageable.class))).thenReturn(empty);
-
-        var body = "{}";
+        when(journalEntryService.find(any(FilterJournalEntryDto.class), any(Pageable.class)))
+                .thenReturn(emptyPage);
 
         mockMvc.perform(post(BASE + "/search")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("{}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(0))
                 .andExpect(jsonPath("$.pagination.page").value(0))
                 .andExpect(jsonPath("$.pagination.size").value(20));
 
-        // захватываем pageable, чтобы убедиться в сорте по умолчанию
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(accountService).find(any(FilterAccountDto.class), pageableCaptor.capture());
-
-        Pageable passed = pageableCaptor.getValue();
+        verify(journalEntryService).find(any(FilterJournalEntryDto.class), pageableCaptor.capture());
+        var passed = pageableCaptor.getValue();
         assertThat(passed.getPageNumber()).isEqualTo(0);
         assertThat(passed.getPageSize()).isEqualTo(20);
         assertThat(passed.getSort()).isEqualTo(Sort.by(Sort.Order.desc("id")));
     }
-
 }

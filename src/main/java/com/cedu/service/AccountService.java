@@ -29,7 +29,6 @@ public class AccountService {
         this.accountMapper = accountMapper;
     }
 
-
     @Transactional
     public ResponseAccountDto create(RequestAccountDto request) {
         UUID parentId = request.getParentId();

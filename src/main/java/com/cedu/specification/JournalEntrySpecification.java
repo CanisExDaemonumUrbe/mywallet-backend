@@ -9,7 +9,6 @@ import static com.cedu.specification.Specs.*;
 public class JournalEntrySpecification {
 
     public static Specification<JournalEntry> withFilters(FilterJournalEntryDto f) {
-
         return where(
                 eq("id", f.getId()),
                 eq("userId", f.getUserId()),

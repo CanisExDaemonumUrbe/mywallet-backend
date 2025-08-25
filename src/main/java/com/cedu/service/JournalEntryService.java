@@ -10,7 +10,6 @@ import com.cedu.exception.NotFoundException;
 import com.cedu.mapper.JournalEntryMapper;
 import com.cedu.repository.JournalEntryRepository;
 import com.cedu.specification.JournalEntrySpecification;
-import org.hibernate.sql.Update;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

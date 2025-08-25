@@ -46,4 +46,24 @@ public class Posting {
             @JoinColumn(name = "user_id",    referencedColumnName = "user_id", insertable = false, updatable = false)
     })
     private Account account;
+
+    public void setJournalEntryId(UUID journalEntryId) {
+        this.journalEntryId = journalEntryId;
+        this.journalEntry = null;
+    }
+
+    public void setAccountId(UUID accountId) {
+        this.accountId = accountId;
+        this.account = null;
+    }
+
+    public void setJournalEntry(JournalEntry journalEntry) {
+        this.journalEntry = journalEntry;
+        this.journalEntryId = (journalEntry != null) ? journalEntry.getId() : null;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+        this.accountId = (account != null) ? account.getId() : null;
+    }
 }

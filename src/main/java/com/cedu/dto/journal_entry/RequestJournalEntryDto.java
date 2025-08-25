@@ -17,8 +17,8 @@ import java.util.UUID;
 public class RequestJournalEntryDto {
 
     @NotNull(message = "user_id is required")
-
     private UUID userId;
+
     @NotNull(message = "occurred_at is required")
     private OffsetDateTime occurredAt;
 
